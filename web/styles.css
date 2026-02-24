@@ -1,0 +1,21 @@
+body{
+	font-size: 24px;
+}
+
+input{
+	size: 2em;
+}
+
+/* #output{
+	font-size: 24px;
+} */
+
+.error{
+	color: red;
+    display: inline-block; 
+	text-align: left;
+}
+
+.centered{
+	text-align:center
+}
