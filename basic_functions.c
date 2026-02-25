@@ -4,6 +4,8 @@ integer gcd(integer a, integer b)
 {
 	integer c;
 
+	if (!a || !b)
+		return (1);
 	do
 	{
 		c = a % b;

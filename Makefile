@@ -1,5 +1,8 @@
 .PHONY: force
 
+CFLAGS = -Werror -Wextra -Wall -O3
+DEBUGFLAGS = -g3 -fsanitize=address
+
 RATIONALS_SRC = rational_numbers.c
 
 OTHER_SRC = basic_functions.c
@@ -9,10 +12,14 @@ WEB_SRC = json.c
 CALCULATOR_WEB_SRC = $(CALCULATOR_SRC) $(WEB_SRC)
 
 CALCULATOR = calculator
+DEBUG = debug
 WEB = web/calculator.js web/calculator.wasm
 
 $(CALCULATOR): calculator_main.c $(CALCULATOR_SRC)
-	cc -DCMDLINE $^ json.c -lreadline -o $@
+	cc $(CFLAGS) -DCMDLINE $^ json.c -lreadline -o $@
+
+$(DEBUG): calculator_main.c $(CALCULATOR_SRC)
+	cc $(DEBUGFLAGS) -DDEBUG -DCMDLINE $^ json.c -lreadline -o $@
 
 web: $(WEB)
 

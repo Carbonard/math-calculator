@@ -62,7 +62,7 @@ void	delete_json(json_obj *json)
 
 int	fprint_json(FILE *file, json_obj *json)
 {
-	char	*output = malloc(2000);
+	char	*output = malloc(3000);
 	size_t	length = 0;
 
 	output[0] = '{';

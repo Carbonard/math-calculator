@@ -67,6 +67,7 @@
 		document.getElementById("outputError").innerHTML = "";
 		var expr = document.getElementById("expr").value;
 		let ptr = Module.ccall('manage_input', "number", ['string'], [expr]);
+		console.log(ptr);
 		let aux = UTF8ToString(ptr);
 		Module._free(ptr);
 		json = JSON.parse(aux);
