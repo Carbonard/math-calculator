@@ -2,13 +2,14 @@
 
 void print_tokens(alg_token_t *tokens)
 {
-	char chars[5][7][5] =
+	char chars[][7][5] =
 	{
+		[ALG_SIGN] = {"", "-"},
 		[ALG_BINARY_OP] = {"+", "-", "*", "/"},
 		[ALG_PARENTHESIS] = {"(", ")"},
 		[ALG_SINGLE_OP] = {"sqrt", "root", "ln", "log", "exp", "abs"}
 	};
-	fprintf(stderr, "\nTokens:\n");
+	fprintf(stderr, "\n\e[93mTokens:\t");
 	for (int i = 0; tokens[i].type != ALG_END; i++)
 	{
 		if (tokens[i].type == ALG_NUMBER)
@@ -16,15 +17,13 @@ void print_tokens(alg_token_t *tokens)
 		else
 			fprintf(stderr, "%s", chars[tokens[i].type][tokens[i].sub_type]);
 	}
-	fprintf(stderr, "\n\n");
+	fprintf(stderr, "\n\e[0m\n");
 }
 
 char *manage_input(char *input)
 {
-	// t_bin_operation	*op_tree;
 	alg_token_t		*tokens;
 	num_expr		*expr;
-	// int				syntax_status;
 	json_obj		*json;
 	char			json_str[1000];
 
@@ -42,12 +41,12 @@ char *manage_input(char *input)
 		#ifdef DEBUG
 			print_tokens(tokens);
 		#endif
-		// remove_spaces(input);
-		// op_tree = generate_tree(input);
-		expr = generate_num_expr(tokens);
-		// print_tree(op_tree, NULL);
-		print_num_expr(expr);
-		// solve_tree_by_steps(op_tree);
+		if ((expr = generate_num_expr(tokens)) != NULL)
+			print_num_expr(expr);
+		printf("-------------------\n");
+		solve_by_steps(expr);
+		free(tokens);
+		// free_num_expr(expr);
 	}
 	sprint_json(json, json_str);
 	#ifdef DEBUG

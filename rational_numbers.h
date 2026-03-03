@@ -18,6 +18,7 @@ rational Q_sum(rational q, rational p);
 rational Q_subs(rational q, rational p);
 rational Q_prod(rational q, rational p);
 rational Q_div(rational a, rational b);
+integer	 int_sqrt(integer n);
 void print_rational(rational q);
 
 #endif

@@ -21,6 +21,11 @@ rational simplify(rational q)
 
 	q[0] /= div;
 	q[1] /= div;
+	if (q[1] < 0)
+	{
+		q[0] *= -1;
+		q[1] *= -1;
+	}
 
 	return (q);
 }

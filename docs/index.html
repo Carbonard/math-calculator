@@ -3,6 +3,12 @@
 <head>
 	<link rel="stylesheet" href="styles.css">
 	<!-- <script src="calculator.js"></script> -->
+
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+	<script defer
+			src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+	</script>
 </head>
 <body>
 
@@ -19,11 +25,12 @@
 	{
 		en:
 		{
-			1 : "unopened parenthesis",
-			2 : "missing opening parenthesis",
+			1 : "unexpected closing parenthesis",
+			2 : "expected closing parenthesis",
 			3 : "operation with no operands",
 			4 : "missing operation",
-			5 : "undefined token"
+			5 : "undefined token",
+			6 : "invalid space"
 		},
 	}
 	let language = "en";
@@ -31,7 +38,13 @@
 	{
 		print(text)
 		{
-			document.getElementById("output").textContent += text + "\n";
+			// document.getElementById("output").textContent += text + "\n";
+			const mathSpan = document.createElement("span");
+			katex.render(text, mathSpan, {
+				throwOnError: false,
+				displayMode: true
+			});
+			document.getElementById("output").appendChild(mathSpan);
 		},
 		printErr(errOutput)
 		{
@@ -40,13 +53,13 @@
 			let text = "";
 			let errData = JSON.parse(errOutput);
 			text += "Syntax error: "
-			text += errMessages[language][errData.code] + "\n";
+			text += errMessages[language][errData.code] + "\n\n";
 			text += errData.input + "\n";
 			for (let i = 0; i < errData.index; i++)
 			{
 				text += ' ';
 			}
-			text += "^";
+			text += "↑";
 			document.getElementById("outputError").textContent = text + "\n";
 		}
 		catch (e)
@@ -84,6 +97,19 @@
 	document.getElementById("solveBtn").addEventListener("click", solve);
 </script>
 
+<!-- <script>
+
+const output = document.getElementById("output");
+
+function render()
+{
+	katex.render(output.value, output, {
+	throwOnError: false,
+	displayMode: true
+	});
+}
+// output.addEventListener("change", render);
+</script> -->
 
 </body>
 </html>

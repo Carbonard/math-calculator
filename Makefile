@@ -13,7 +13,7 @@ CALCULATOR_WEB_SRC = $(CALCULATOR_SRC) $(WEB_SRC)
 
 CALCULATOR = calculator
 DEBUG = debug
-WEB = web/calculator.js web/calculator.wasm
+WEB = docs/calculator.js docs/calculator.wasm
 
 $(CALCULATOR): calculator_main.c $(CALCULATOR_SRC)
 	cc $(CFLAGS) -DCMDLINE $^ json.c -lreadline -o $@
@@ -23,6 +23,6 @@ $(DEBUG): calculator_main.c $(CALCULATOR_SRC)
 
 web: $(WEB)
 
-$(WEB): $(CALCULATOR_WEB_SRC) web/index.html
-# 	rm -f web/calculator.js web/calculator.wasm
-	emcc -DWEB $(CALCULATOR_WEB_SRC) -s EXPORTED_FUNCTIONS='["_manage_input", "_free"]' -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap']" -o web/calculator.js
+$(WEB): $(CALCULATOR_WEB_SRC) docs/index.html
+# 	rm -f docs/calculator.js docs/calculator.wasm
+	emcc -DWEB $(CALCULATOR_WEB_SRC) -s EXPORTED_FUNCTIONS='["_manage_input", "_free"]' -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap']" -o docs/calculator.js
