@@ -43,10 +43,9 @@ static int	skip_parenthesis(alg_token_t *tokens, int i)
 	return (i);
 }
 
-static void	add_operand(num_expr *expr, int op, alg_token_t *tokens, int start, int end)
+static operand	*create_operand_from_tokens(int op, alg_token_t *tokens, int start, int end)
 {
 	operand		*new_operand = malloc(sizeof(operand));
-	operand		*aux;
 	alg_token_t	*slice;
 
 	slice = slice_tokens(tokens, start, end);
@@ -58,24 +57,48 @@ static void	add_operand(num_expr *expr, int op, alg_token_t *tokens, int start, 
 	new_operand->operation = op;
 	new_operand->next = NULL;
 	new_operand->prev = NULL;
-	if (!(expr->operands))
+	return (new_operand);
+}
+
+void	operand_to_bin_op(operand *left, int operation, operand *right)
+/* previous right->prev and right->next are lost */
+{
+	num_expr	*original_op;
+
+	// Save original
+	original_op = left->operand;
+	// Create the binary operation structure
+	left->operand = create_num_expr(ALG_BINARY_OP, operation);
+	// Add left operand as first binary operand
+	left->operand->operands = create_operand(0, original_op);
+	left->operand->operands->next = right;
+	// Extract right operand from its operands list
+	if (right->prev)
 	{
-		expr->operands = new_operand;
-		return;
+		right->prev->next = right->next;
+		if (right->next)
+			right->next->prev = right->prev;
 	}
-	aux = expr->operands;
-	while (aux->next)
-		aux = aux->next;
-	aux->next = new_operand;
-	new_operand->prev = aux;
-	return;
-	// expr->operands = realloc(expr->operands, (op_i+1) * sizeof(operand));
+	// Insert right operand to binary operation
+	right->next = NULL;
+	right->prev = left->operand->operands;
+	right->operation = operation;
+}
+
+operand	*last_operand(num_expr *expr)
+{
+	operand *op;
+
+	op = expr->operands;
+	while (op && op->next)
+		op = op->next;
+	return (op);
 }
 
 static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 {
 	num_expr	*expr = NULL;
-	int			i = 0, break_point = 0, op = OP_ERR;
+	int			i = 0, break_point = 0, op = 0;
 
 	while (tokens[i].type != ALG_END)
 	{
@@ -83,12 +106,11 @@ static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 		if (tokens[i].type == ALG_BINARY_OP && (tokens[i].sub_type == op1 ||  tokens[i].sub_type == op2))
 		{
 			if (!expr)
-			{
-				expr = malloc(sizeof(num_expr));
-				expr->type = ALG_BINARY_OP;
-				expr->operands = NULL;
-			}
-			add_operand(expr, op, tokens, break_point, i);
+				expr = create_num_expr(ALG_BINARY_OP, op1);
+			if (op == OP_DIV)
+				operand_to_bin_op(last_operand(expr), OP_DIV, create_operand_from_tokens(op, tokens, break_point, i));
+			else
+				append_operand(expr, create_operand_from_tokens(op, tokens, break_point, i));
 			op = tokens[i].sub_type;
 			break_point = i + 1;
 		}
@@ -97,9 +119,10 @@ static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 	}
 	if (expr)
 	{
-		add_operand(expr, op, tokens, break_point, i);
-		expr->subtype = op1;
-		// add_operand(expr, OP_ERR, tokens, 0, -1);
+		if (op == OP_DIV)
+			operand_to_bin_op(last_operand(expr), OP_DIV, create_operand_from_tokens(op, tokens, break_point, i));
+		else
+			append_operand(expr, create_operand_from_tokens(op, tokens, break_point, i));
 	}
 	return (expr);
 }
@@ -129,15 +152,9 @@ static num_expr	*generate_num_expr_sing_op(alg_token_t *tokens)
 
 	if (tokens[0].type == ALG_SINGLE_OP)
 	{
-		expr = malloc(sizeof(num_expr));
-		expr->type = ALG_SINGLE_OP;
-		expr->operands = malloc(sizeof(operand));
-		expr->operands->operation = tokens[0].sub_type;
+		expr = create_num_expr(ALG_SINGLE_OP, tokens[0].sub_type);
 		slice = slice_sing_operand(tokens + 1);
-		if (slice)
-			expr->operands->operand = generate_num_expr(slice);
-		else
-			printf("please, report issue (undefined behaviour after single operator)\n");
+		expr->operands = create_operand(tokens[0].sub_type, generate_num_expr(slice));
 		free(slice);
 	}
 	return (expr);
@@ -159,18 +176,13 @@ num_expr	*generate_num_expr(alg_token_t *tokens)
 		expr = split_num_expr_bin_op(tokens, OP_PROD, OP_DIV);
 	if (!expr)
 		expr = split_num_expr_bin_op(tokens, OP_POW, OP_POW);
-	if (!expr && tokens[0].type == ALG_SIGN && tokens[1].type != ALG_NUMBER)
+	if (!expr && tokens[0].type == ALG_SIGN)
 	{
 		expr = generate_num_expr(tokens + 1);
 		if (expr->sign)
 			expr->sign = !tokens[0].sub_type;
 		else
 			expr->sign = tokens[0].sub_type;
-		if (expr->type == ALG_NUMBER && expr->sign)
-		{
-			expr->result.sgn = !expr->result.sgn;
-			expr->sign = 0;
-		}
 		return (expr);
 	}
 	if (!expr && tokens[0].type == ALG_PARENTHESIS && tokens[skip_parenthesis(tokens, 0)].type == ALG_END)
@@ -184,147 +196,15 @@ num_expr	*generate_num_expr(alg_token_t *tokens)
 		expr = generate_num_expr_sing_op(tokens);
 	if (!expr)
 	{
-		expr = malloc(sizeof(num_expr));
-		if (tokens[0].type == ALG_SIGN)
-		{
-			expr->result.sgn = tokens[0].sub_type;
-			tokens++;
-			// printf("Sign: %d, new token:%d\n", expr->sign, tokens->number);
-		}
-		else
-			expr->result.sgn = 0;
-		expr->sign = 0;
-		expr->type = ALG_NUMBER;
-		expr->result.integer = tokens->number;
-		expr->result.type = N_INTEGER;
-		// if (expr->sign == 1)
-		// {
-		// 	expr->sign = 0;
-		// 	expr->result.integer *= -1;
-		// }
-		expr->resolved = 1;
+		expr = create_num_expr(ALG_NUMBER, 0);
+		expr->result = tokens->number;
+		expr->solved = 1;
 		if (tokens[1].type != ALG_END)
 			printf("Please, report issue (unexpected distribution of operands)\n");
 	}
 	else
-	{
-		expr->resolved = 0;
-	}
-	expr->sign = 0;
+		expr->solved = 0;
 	return (expr);
-}
-
-void	print_number(number n)
-{
-	if (n.sgn)
-		printf("-");
-	if (n.type == N_INTEGER)
-	{
-		printf("%d", n.integer);
-	}
-	if (n.type == N_RATIONAL)
-		printf("\\frac{%d}{%d}", n.rational[0], n.rational[1]);
-	if (n.type == N_ROOT)
-	{
-		if (n.root[1] == 2)
-			printf("\\sqrt{%d}", n.root[0]);
-		else
-			printf("\\sqrt[%d]{%d}", n.root[1], n.root[0]);
-	}
-	if (n.type == N_LOG)
-		printf("\\log_%d{%d}", n.log[1], n.log[0]);
-}
-
-static int parenthesis_needed(num_expr *current, num_expr *next)
-{
-	// if (!current->operands->next)
-	// 	return (0);
-	if (next->type == ALG_BINARY_OP)
-	{
-		if (!next->operands->next)
-			return (0);
-		return (1);
-		if (current->subtype == OP_PROD && next->subtype == OP_SUM)
-			return (1);
-		if (current->subtype == OP_POW)
-			return (1);
-	}
-	else if (next->type == ALG_NUMBER && next->result.sgn)
-	{
-		return (1);
-	}
-	return (0);
-}
-
-static void	print_numexpr(num_expr *expr)
-{
-	char *bin_operands[] = {"+","-","\\cdot","/","^"};
-	char sing_operands[][5] =
-	{
-		[OP_SQRT] = "sqrt",
-		[OP_ROOT] = "root",
-		[OP_LN] = "ln",
-		[OP_LOG] = "log",
-		[OP_EXP] = "exp",
-		[OP_ABS] = "abs"
-	};
-
-	if (expr->sign)
-	{
-		printf("-");
-	}
-	if (expr->type == ALG_NUMBER)
-		print_number(expr->result);
-	else if (expr->type == ALG_BINARY_OP)
-	{
-		if (!expr->operands->next || expr->operands->next->operation != OP_DIV)
-		{
-			if (expr->sign)
-				printf("(");
-			if (parenthesis_needed(expr, expr->operands[0].operand) && expr->operands->operand->type != ALG_NUMBER)
-				printf("(");
-			print_numexpr(expr->operands[0].operand);
-			if (parenthesis_needed(expr, expr->operands[0].operand) && expr->operands->operand->type != ALG_NUMBER)
-				printf(")");
-		}
-		for (operand *op = expr->operands->next; op; op = op->next)
-		{
-			if (op->operation == OP_DIV)
-			{
-				printf("\\frac{");
-				print_numexpr(op->prev->operand);
-				printf("}{");
-				print_numexpr(op->operand);
-				printf("}");
-			}
-			else
-			{
-				printf("%s",bin_operands[op->operation]);
-				if (!(op->next && op->next->operation == OP_DIV))
-				{
-					if (parenthesis_needed(expr, op->operand))
-						printf("(");
-					print_numexpr(op->operand);
-					if (parenthesis_needed(expr, op->operand))
-						printf(")");
-				}
-			}
-		}
-		if (expr->sign)
-			printf(")");
-	}
-	else if (expr->type == ALG_SINGLE_OP)
-	{
-		printf("\\%s{", sing_operands[expr->operands->operation]);
-		print_numexpr(expr->operands->operand);
-		printf("}");
-	}
-}
-
-void	print_num_expr(num_expr *expr)
-{
-	print_numexpr(expr);
-	printf("\n");
 }
 
 /*

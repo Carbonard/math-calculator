@@ -1,0 +1,37 @@
+{
+"app": {
+	"title": "Math Tutor",
+	"subtitle": "Step by step solver"
+},
+
+"buttons": {
+	"calculate": "Calculate",
+	"clear": "Clear"
+},
+
+"placeholders": {
+	"expression": "Enter an expression"
+},
+
+"errors":
+{
+	"syntax":
+	{
+		"SE_CLOS_PAR"	: "unexpected closing parenthesis",
+		"SE_OPEN_PAR"	: "expected closing parenthesis",
+		"SE_EMPTY_OP"	: "operation with no operands",
+		"SE_MISSING_OP"	: "missing operation",
+		"SE_UNDEFINED"	: "undefined token",
+		"SE_SPACE"		: "invalid space"
+	},
+	"math":
+	{
+		"div_zero" : "division by zero"
+	}
+},
+
+"messages": {
+	"result": "Result",
+	"steps": "Steps"
+}
+}

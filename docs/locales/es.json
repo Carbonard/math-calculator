@@ -1,0 +1,37 @@
+{
+"app": {
+	"title": "Tutuor de Mates",
+	"subtitle": "Resolución por pasos"
+},
+
+"buttons": {
+	"calculate": "Calcular",
+	"clear": "Limpiar"
+},
+
+"placeholders": {
+	"expression": "Introduce una expresión"
+},
+
+"errors":
+{
+	"syntax":
+	{
+		"SE_CLOS_PAR"	: "paréntesis de cierre inesperado",
+		"SE_OPEN_PAR"	: "paréntesis mal cerrado",
+		"SE_EMPTY_OP"	: "operación sin operando",
+		"SE_MISSING_OP"	: "falta operación",
+		"SE_UNDEFINED"	: "token indefinido",
+		"SE_SPACE"		: "espacio inválido"
+	},
+	"math":
+	{
+		"div_zero" : "división entre cero"
+	}
+},
+
+"messages": {
+	"result": "Resultado",
+	"steps": "Pasos"
+}
+}

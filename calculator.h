@@ -17,10 +17,10 @@
 enum syntax_status
 {
 	SE_SUCCESS,
-	SE_EXCEDING_PARENTHESIS,
-	SE_MISSING_PARENTHESIS,
-	SE_EMPTY_OPERATOR,
-	SE_MISSING_OPERATOR,
+	SE_CLOS_PAR,
+	SE_OPEN_PAR,
+	SE_EMPTY_OP,
+	SE_MISSING_OP,
 	SE_UNDEFINED,
 	SE_SPACE,
 	SE_TOTAL
@@ -55,6 +55,7 @@ enum e_alg_type
 
 enum e_binary_operators
 {
+	OP_NONE,
 	OP_SUM,
 	OP_SUBS,
 	OP_PROD,
@@ -64,6 +65,7 @@ enum e_binary_operators
 
 enum e_single_operators
 {
+	OP_SNONE,
 	OP_SQRT,
 	OP_ROOT,
 	OP_LN,
@@ -104,18 +106,18 @@ enum e_numbers
 	N_LOG
 };
 
-typedef struct s_number
-{
-	int 	type;
-	char	sgn;
-	union
-	{
-		int	integer;
-		int	rational[2];
-		int	root[2];
-		int	log[2];
-	};
-}	number;
+// typedef struct s_number
+// {
+// 	int 	type;
+// 	char	sgn;
+// 	union
+// 	{
+// 		int	integer;
+// 		int	rational[2];
+// 		int	root[2];
+// 		int	log[2];
+// 	};
+// }	number;
 
 typedef struct s_operand operand;
 
@@ -125,8 +127,8 @@ typedef struct s_num_expr
 	int		type;
 	int		subtype;
 	operand	*operands;
-	number	result;
-	int		resolved;
+	integer	result;
+	int		solved;
 }	num_expr;
 
 struct s_operand
@@ -147,8 +149,16 @@ void	 print_tokens(alg_token_t *tokens);
 // Tree
 // t_bin_operation *generate_tree(char *input);
 // void	print_tree(t_bin_operation *tree, char *comment);
+num_expr	*create_num_expr(int type, int subtype);
+operand		*create_operand(int operation, num_expr *expr);
+void		append_operand(num_expr *node, operand *new_operand);
 num_expr	*generate_num_expr(alg_token_t *tokens);
+num_expr	*create_num_num_expr(int sign, int result);
 void		print_num_expr(num_expr *expr);
+void		free_num_expr(num_expr *expr);
+void		free_operand(operand *op);
+operand		*del_and_back(operand *op);
+void		operand_to_bin_op(operand *left, int operation, operand *right);
 // Solve
 // void	solve_tree_by_steps(t_bin_operation *tree);
 void	solve_by_steps(num_expr *expr);

@@ -7,7 +7,7 @@ RATIONALS_SRC = rational_numbers.c
 
 OTHER_SRC = basic_functions.c
 
-CALCULATOR_SRC = $(RATIONALS_SRC) $(OTHER_SRC) calculator_check_input.c calculator_manage_input.c calculator_solve.c calculator_tree.c calculator_utils.c calculator_errors.c
+CALCULATOR_SRC = $(RATIONALS_SRC) $(OTHER_SRC) calculator_check_input.c calculator_manage_input.c calculator_solve.c calculator_tree_generator.c calculator_print_expr.c calculator_utils.c calculator_errors.c calculator_tree_utils.c
 WEB_SRC = json.c
 CALCULATOR_WEB_SRC = $(CALCULATOR_SRC) $(WEB_SRC)
 
