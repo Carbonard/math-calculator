@@ -42,10 +42,25 @@ static void	prod_int(num_expr *expr, num_expr *a, num_expr *b)
 	// print_num_expr(expr);
 }
 
+static int	simplify_num_div(num_expr *a, num_expr *b)
+{
+	integer div = gcd(a->result, b->result);
+
+	if (div < 2)
+		return (0);
+	a->result /= div;
+	b->result /= div;
+	return (1);
+}
+
 static int	div_int(num_expr *expr, num_expr *a, num_expr *b)
 {
 	if (a->result % b->result)
+	{
+		if (simplify_num_div(a, b))
+			print_num_expr(expr);
 		return (0);
+	}
 	a->sign = (a->sign != b->sign);
 	print_num_expr(expr);
 	a->result = a->result / b->result;
@@ -92,7 +107,7 @@ int manage_signs(operand *op_1, operand *op_2)
 	return (changed);
 }
 
-operand* apply_propierty(operand *op1, operand *op2)
+operand* apply_propierties(operand *op1, operand *op2)
 // this joins op1 and op2 in op1 and return previous op2 (or NULL if anything happened)
 {
 	operand	*ret_value = NULL;
@@ -135,7 +150,45 @@ operand* apply_propierty(operand *op1, operand *op2)
 		ret_value = del_and_back(op2);
 	}
 
+	// (a/b)+(c/d) // (a/b)+c
+	else if (op2->operation == OP_PROD
+		&& ((op1->operand->type == ALG_BINARY_OP && op1->operand->subtype == OP_DIV)
+		|| (op2->operand->type == ALG_BINARY_OP && op2->operand->subtype == OP_DIV)))
+	{
+		#ifdef DEBUG
+			printind();
+			printf("Applying (a/b)+(c/d) // (a/b)+c\n");
+		#endif
+		if (op1->operand->subtype != OP_DIV)
+			// Transform c into c/1
+			operand_to_bin_op(op1, OP_DIV, create_operand(OP_DIV, create_num_num_expr(0,1)));
+		if (op2->operand->subtype != OP_DIV)
+			// Transform c into c/1
+			operand_to_bin_op(op2, OP_DIV, create_operand(OP_DIV, create_num_num_expr(0,1)));
+		
+		operand_to_bin_op(op1->operand->operands->next, OP_PROD, op2->operand->operands->next);
+		operand_to_bin_op(op1->operand->operands, OP_PROD, op2->operand->operands);
+		op2->operand->operands = NULL;
+		ret_value = del_and_back(op2);
+	}
+
 	return (ret_value);
+}
+
+static operand	*apply_associative(num_expr *expr, operand *op)
+{
+	if (op->operand->type == ALG_BINARY_OP
+		&& op->operation == op->operand->subtype
+		&& (op->operation == OP_SUM || op->operation == OP_PROD))
+	{
+		#ifdef DEBUG
+			printind();
+			printf("Applying associative\n");
+		#endif
+		expand_operand(&op, op->operand->operands);
+		print_num_expr(expr);
+	}
+	return (op);
 }
 
 static int	operate_numbers(num_expr *expr, operand *op1, operand *op2)
@@ -168,12 +221,18 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 	int		changed = 0;
 	operand	*aux;
 
+	#ifdef DEBUG
+		printind();
+		printf("Solving binary operation\n");
+	#endif
 	for (operand *op_1 = node->operands; op_1; op_1 = op_1->next)
 	{
 		solve_node_didactic(expr, op_1->operand);
+		op_1 = apply_associative(expr, op_1);
 		for (operand* op_2 = op_1->next; op_2; op_2 = op_2->next)
 		{
 			solve_node_didactic(expr, op_2->operand);
+			op_2 = apply_associative(expr, op_2);
 			#ifdef DEBUG
 				printind();
 				printf("Managing signs\n");
@@ -184,15 +243,15 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 				printind();
 				printf("Managing propieries\n");
 			#endif
-			if ((aux = apply_propierty(op_1, op_2)) != NULL)
+			if ((aux = apply_propierties(op_1, op_2)) != NULL)
 			{
 				op_2 = aux;
 				print_num_expr(expr);
-				op_1->operand->solved = 0;
-				solve_node_didactic(expr, op_1->operand);
-				changed = 1;
+				// op_1->operand->solved = 0;
+				solve_node_didactic(expr, node);
+				return (0);
 			}
-			// this else asumes that apply_propierty joins op1 and op2 in op1
+			// this else asumes that apply_propierties joins op1 and op2 in op1
 			else if (op_1->operand->type == ALG_NUMBER && op_2->operand->type == ALG_NUMBER)
 			{
 				#ifdef DEBUG
@@ -212,9 +271,19 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 				}
 				#ifdef DEBUG
 				else
+				{
+					printind();
 					printf("Not operated\n");
+				}
 				#endif
 			}
+			#ifdef DEBUG
+			else
+			{
+				printind();
+				printf("Not operated\n");
+			}
+			#endif
 		}
 	}
 	if (node->operands && !node->operands->next && node->type == ALG_BINARY_OP)
@@ -302,7 +371,7 @@ static void sing_op_node_didactic(num_expr *expr, num_expr *node)
 
 static void solve_node_didactic(num_expr *expr, num_expr *node)
 {
-	if (node->solved)
+	if (node->type == ALG_NUMBER)
 		return;
 	#ifdef DEBUG
 		indent++;
@@ -315,7 +384,7 @@ static void solve_node_didactic(num_expr *expr, num_expr *node)
 			(void)expr;
 	else if (node->type == ALG_SINGLE_OP)
 		sing_op_node_didactic(expr, node);
-	node->solved = 1;
+	// node->solved = 1;
 	#ifdef DEBUG
 		printind();
 		printf("Solved: ");

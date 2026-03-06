@@ -198,12 +198,12 @@ num_expr	*generate_num_expr(alg_token_t *tokens)
 	{
 		expr = create_num_expr(ALG_NUMBER, 0);
 		expr->result = tokens->number;
-		expr->solved = 1;
+		// expr->solved = 1;
 		if (tokens[1].type != ALG_END)
 			printf("Please, report issue (unexpected distribution of operands)\n");
 	}
-	else
-		expr->solved = 0;
+	// else
+	// 	expr->solved = 0;
 	return (expr);
 }
 

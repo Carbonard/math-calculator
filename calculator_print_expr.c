@@ -33,7 +33,8 @@ static void	print_numexpr(num_expr *expr)
 		printf("-");
 	if (expr->type == ALG_NUMBER)
 		printf("%d", expr->result);
-	else if (expr->type == ALG_BINARY_OP && expr->subtype != OP_DIV)
+	else if (expr->type == ALG_BINARY_OP
+			&& (expr->subtype != OP_DIV || !expr->operands->next))
 	{
 		if (expr->sign)
 			printf("(");

@@ -128,7 +128,7 @@ typedef struct s_num_expr
 	int		subtype;
 	operand	*operands;
 	integer	result;
-	int		solved;
+	// int		solved;
 }	num_expr;
 
 struct s_operand
@@ -159,6 +159,8 @@ void		free_num_expr(num_expr *expr);
 void		free_operand(operand *op);
 operand		*del_and_back(operand *op);
 void		operand_to_bin_op(operand *left, int operation, operand *right);
+void		insert_operands(operand *op, int operation, operand *operands);
+void		expand_operand(operand **op, operand *operands);
 // Solve
 // void	solve_tree_by_steps(t_bin_operation *tree);
 void	solve_by_steps(num_expr *expr);

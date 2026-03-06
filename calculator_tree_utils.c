@@ -6,7 +6,7 @@ num_expr	*create_num_expr(int type, int subtype)
 
 	expr->type = type;
 	expr->subtype = subtype;
-	expr->solved = 0;
+	// expr->solved = 0;
 	expr->sign = 0;
 	expr->operands = NULL;
 	return (expr);
@@ -18,7 +18,7 @@ num_expr	*create_num_num_expr(int sign, int result)
 
 	expr->type = ALG_NUMBER;
 	expr->subtype = 0;
-	expr->solved = 1;
+	// expr->solved = 1;
 	expr->sign = sign;
 	expr->result = result;
 	expr->operands = NULL;
@@ -50,6 +50,43 @@ void	append_operand(num_expr *node, operand *new_operand)
 		aux = aux->next;
 	aux->next = new_operand;
 	new_operand->prev = aux;
+}
+
+void	insert_operands(operand *op, int operation, operand *operands)
+// insert operands between op and op->next
+{
+	operand *last;
+
+	last = operands;
+	while (last->next)
+		last = last->next;
+	last->next = op->next;
+	op->next = operands;
+	operands->operation = operation;
+	operands->prev = op;
+}
+
+void	expand_operand(operand **op, operand *operands)
+// Substitute op by operands. Assumes op->operands doesn't need to be liberated
+{
+	operand *aux;
+
+	// insert_operands(*op, operands);
+	// aux = del_and_back(*op);
+	// if (aux)
+	// 	*op = aux;
+	// else
+	// 	*op = operands;
+	if ((*op)->prev)
+		(*op)->prev->next = operands;
+	aux = operands;
+	while (aux->next)
+		aux = aux->next;
+	aux->next = (*op)->next;
+	operands->operation = (*op)->operation;
+	free(*op);
+	operands->prev = (*op)->prev;
+	*op = operands;
 }
 
 void	free_num_expr(num_expr *expr)
