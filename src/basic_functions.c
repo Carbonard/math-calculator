@@ -1,4 +1,4 @@
-#include "rational_numbers.h"
+#include "../includes/calculator.h"
 
 integer gcd(integer a, integer b)
 {

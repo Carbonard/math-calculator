@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/tree.h"
 
 static alg_token_t *slice_tokens(alg_token_t *tokens, int start, int end)
 {
@@ -50,49 +50,14 @@ static operand	*create_operand_from_tokens(int op, alg_token_t *tokens, int star
 
 	slice = slice_tokens(tokens, start, end);
 	if (slice)
-		new_operand->operand = generate_num_expr(slice);
+		new_operand->expr = generate_num_expr(slice);
 	else
-		new_operand->operand = NULL;
+		new_operand->expr = NULL;
 	free(slice);
 	new_operand->operation = op;
 	new_operand->next = NULL;
 	new_operand->prev = NULL;
 	return (new_operand);
-}
-
-void	operand_to_bin_op(operand *left, int operation, operand *right)
-/* previous right->prev and right->next are lost */
-{
-	num_expr	*original_op;
-
-	// Save original
-	original_op = left->operand;
-	// Create the binary operation structure
-	left->operand = create_num_expr(ALG_BINARY_OP, operation);
-	// Add left operand as first binary operand
-	left->operand->operands = create_operand(0, original_op);
-	left->operand->operands->next = right;
-	// Extract right operand from its operands list
-	if (right->prev)
-	{
-		right->prev->next = right->next;
-		if (right->next)
-			right->next->prev = right->prev;
-	}
-	// Insert right operand to binary operation
-	right->next = NULL;
-	right->prev = left->operand->operands;
-	right->operation = operation;
-}
-
-operand	*last_operand(num_expr *expr)
-{
-	operand *op;
-
-	op = expr->operands;
-	while (op && op->next)
-		op = op->next;
-	return (op);
 }
 
 static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)

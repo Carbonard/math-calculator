@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/tree.h"
 
 num_expr	*create_num_expr(int type, int subtype)
 {
@@ -9,6 +9,7 @@ num_expr	*create_num_expr(int type, int subtype)
 	// expr->solved = 0;
 	expr->sign = 0;
 	expr->operands = NULL;
+	expr->result = 0;
 	return (expr);
 }
 
@@ -32,7 +33,7 @@ operand	*create_operand(int operation, num_expr *expr)
 	new_op->next = NULL;
 	new_op->prev = NULL;
 	new_op->operation = operation;
-	new_op->operand = expr;
+	new_op->expr = expr;
 	return (new_op);
 }
 
@@ -52,41 +53,37 @@ void	append_operand(num_expr *node, operand *new_operand)
 	new_operand->prev = aux;
 }
 
-void	insert_operands(operand *op, int operation, operand *operands)
-// insert operands between op and op->next
+void	operand_to_bin_op(operand *left, int operation, operand *right)
+/* previous right->prev and right->next are lost */
 {
-	operand *last;
+	num_expr	*original_left;
 
-	last = operands;
-	while (last->next)
-		last = last->next;
-	last->next = op->next;
-	op->next = operands;
-	operands->operation = operation;
-	operands->prev = op;
+	// Save original
+	original_left = left->expr;
+	// Create the binary operation structure
+	left->expr = create_num_expr(ALG_BINARY_OP, operation);
+	// Add left operand as first binary operand
+	left->expr->operands = create_operand(0, original_left);
+	left->expr->operands->next = right;
+	// Extract right operand from its operands list
+	if (right->prev)
+		right->prev->next = right->next;
+	if (right->next)
+		right->next->prev = right->prev;
+	// Insert right operand to binary operation
+	right->next = NULL;
+	right->prev = left->expr->operands;
+	right->operation = operation;
 }
 
-void	expand_operand(operand **op, operand *operands)
-// Substitute op by operands. Assumes op->operands doesn't need to be liberated
+operand	*last_operand(num_expr *expr)
 {
-	operand *aux;
+	operand *op;
 
-	// insert_operands(*op, operands);
-	// aux = del_and_back(*op);
-	// if (aux)
-	// 	*op = aux;
-	// else
-	// 	*op = operands;
-	if ((*op)->prev)
-		(*op)->prev->next = operands;
-	aux = operands;
-	while (aux->next)
-		aux = aux->next;
-	aux->next = (*op)->next;
-	operands->operation = (*op)->operation;
-	free(*op);
-	operands->prev = (*op)->prev;
-	*op = operands;
+	op = expr->operands;
+	while (op && op->next)
+		op = op->next;
+	return (op);
 }
 
 void	free_num_expr(num_expr *expr)
@@ -109,20 +106,7 @@ void	free_operand(operand *op)
 {
 	if (!op)
 		return;
-	free_num_expr(op->operand);
-	op->operand = NULL;
+	free_num_expr(op->expr);
+	op->expr = NULL;
 	free(op);
-}
-
-operand	*del_and_back(operand *op)
-{
-	operand *aux;
-
-	aux = op;
-	if (op->next)
-		op->next->prev = op->prev;
-	op = op->prev;
-	op->next = op->next->next;
-	free_operand(aux);
-	return (op);
 }

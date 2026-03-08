@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/calculator.h"
 
 static int parenthesis_needed(num_expr *current, num_expr *next)
 {
@@ -38,20 +38,20 @@ static void	print_numexpr(num_expr *expr)
 	{
 		if (expr->sign)
 			printf("(");
-		if (expr->operands->operand->type == ALG_BINARY_OP)
-			if (parenthesis_needed(expr, expr->operands[0].operand))
+		if (expr->operands->expr->type == ALG_BINARY_OP)
+			if (parenthesis_needed(expr, expr->operands[0].expr))
 				printf("(");
-		print_numexpr(expr->operands[0].operand);
-		if (expr->operands->operand->type == ALG_BINARY_OP)
-			if (parenthesis_needed(expr, expr->operands[0].operand))
+		print_numexpr(expr->operands[0].expr);
+		if (expr->operands->expr->type == ALG_BINARY_OP)
+			if (parenthesis_needed(expr, expr->operands[0].expr))
 				printf(")");
 		for (operand *op = expr->operands->next; op; op = op->next)
 		{
 			printf("%s",bin_operands[op->operation]);
-			if (parenthesis_needed(expr, op->operand))
+			if (parenthesis_needed(expr, op->expr))
 				printf("(");
-			print_numexpr(op->operand);
-			if (parenthesis_needed(expr, op->operand))
+			print_numexpr(op->expr);
+			if (parenthesis_needed(expr, op->expr))
 				printf(")");
 		}
 		if (expr->sign)
@@ -60,15 +60,15 @@ static void	print_numexpr(num_expr *expr)
 	else if (expr->type == ALG_BINARY_OP && expr->subtype == OP_DIV)
 	{
 		printf("\\frac{");
-		print_numexpr(expr->operands->operand);
+		print_numexpr(expr->operands->expr);
 		printf("}{");
-		print_numexpr(expr->operands->next->operand);
+		print_numexpr(expr->operands->next->expr);
 		printf("}");
 	}
 	else if (expr->type == ALG_SINGLE_OP)
 	{
 		printf("\\%s{", sing_operands[expr->operands->operation]);
-		print_numexpr(expr->operands->operand);
+		print_numexpr(expr->operands->expr);
 		printf("}");
 	}
 }

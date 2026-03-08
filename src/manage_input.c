@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/solve.h"
 
 void print_tokens(alg_token_t *tokens)
 {
@@ -43,12 +43,14 @@ char *manage_input(char *input)
 		#endif
 		if ((expr = generate_num_expr(tokens)) != NULL)
 			print_num_expr(expr);
-		printf("-------------------\n");
+		printf("------------------------------------------\n");
 		solve_by_steps(expr);
+		free_num_expr(expr);
 		free(tokens);
 		// free_num_expr(expr);
 	}
 	sprint_json(json, json_str);
+	delete_json(json);
 	#ifdef DEBUG
 		fprintf(stderr, "\njson:\n%s\n\n", json_str);
 	#else

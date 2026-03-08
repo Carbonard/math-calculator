@@ -7,9 +7,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "rational_numbers.h"
 #include "json.h"
+#ifdef DEBUG
+	#include "debug.h"
+#endif
 
+typedef int integer;
 
 #define PI_NUM 3.14159265359;
 #define E_NUM  2.71828182845;
@@ -134,7 +137,7 @@ typedef struct s_num_expr
 struct s_operand
 {
 	int			operation;
-	num_expr	*operand;
+	num_expr	*expr;
 	operand		*next;
 	operand		*prev;
 };
@@ -143,28 +146,12 @@ struct s_operand
 alg_token_t	*check_syntax(char *input, json_obj **json);
 char		*manage_input(char *input);
 // Input errors
-void	 print_syntax_error(char *input, int error, int index);
-json_obj *json_syntax_error(int error, char *input, int index);
-void	 print_tokens(alg_token_t *tokens);
-// Tree
-// t_bin_operation *generate_tree(char *input);
-// void	print_tree(t_bin_operation *tree, char *comment);
-num_expr	*create_num_expr(int type, int subtype);
-operand		*create_operand(int operation, num_expr *expr);
-void		append_operand(num_expr *node, operand *new_operand);
+void		 print_syntax_error(char *input, int error, int index);
+json_obj	 *json_syntax_error(int error, char *input, int index);
+void		 print_tokens(alg_token_t *tokens);
 num_expr	*generate_num_expr(alg_token_t *tokens);
-num_expr	*create_num_num_expr(int sign, int result);
-void		print_num_expr(num_expr *expr);
-void		free_num_expr(num_expr *expr);
-void		free_operand(operand *op);
-operand		*del_and_back(operand *op);
-void		operand_to_bin_op(operand *left, int operation, operand *right);
-void		insert_operands(operand *op, int operation, operand *operands);
-void		expand_operand(operand **op, operand *operands);
-// Solve
-// void	solve_tree_by_steps(t_bin_operation *tree);
-void	solve_by_steps(num_expr *expr);
+void		solve_by_steps(num_expr *expr);
 // Utils
-void	remove_spaces(char *str);
+void		remove_spaces(char *str);
 
 #endif

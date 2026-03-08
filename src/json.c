@@ -1,4 +1,4 @@
-#include "json.h"
+#include "../includes/json.h"
 
 void	init_json(json_obj *json, int size)
 {
@@ -58,6 +58,7 @@ void	delete_json(json_obj *json)
 	json->size = 0;
 	json->length = 0;
 	json->data = NULL;
+	free(json);
 }
 
 int	fprint_json(FILE *file, json_obj *json)

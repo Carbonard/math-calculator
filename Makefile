@@ -3,23 +3,24 @@
 CFLAGS = -Werror -Wextra -Wall -O3
 DEBUGFLAGS = -g3 -fsanitize=address
 
-RATIONALS_SRC = rational_numbers.c
-
 OTHER_SRC = basic_functions.c
 
-CALCULATOR_SRC = $(RATIONALS_SRC) $(OTHER_SRC) calculator_check_input.c calculator_manage_input.c calculator_solve.c calculator_tree_generator.c calculator_print_expr.c calculator_utils.c calculator_errors.c calculator_tree_utils.c
-WEB_SRC = json.c
-CALCULATOR_WEB_SRC = $(CALCULATOR_SRC) $(WEB_SRC)
+CALCULATOR_C = check_input manage_input\
+solve solve_apply_properties solve_operate_numbers solve_utils basic_functions\
+tree_generator print_expr tree_utils\
+errors json
+CALCULATOR_SRC = $(CALCULATOR_C:%=src/%.c)
+CALCULATOR_WEB_SRC = $(CALCULATOR_SRC)
 
 CALCULATOR = calculator
 DEBUG = debug
 WEB = docs/calculator.js docs/calculator.wasm
 
-$(CALCULATOR): calculator_main.c $(CALCULATOR_SRC)
-	cc $(CFLAGS) -DCMDLINE $^ json.c -lreadline -o $@
+$(CALCULATOR): src/main.c $(CALCULATOR_SRC)
+	cc $(CFLAGS) -DCMDLINE $^ -lreadline -o $@
 
-$(DEBUG): calculator_main.c $(CALCULATOR_SRC)
-	cc $(DEBUGFLAGS) -DDEBUG -DCMDLINE $^ json.c -lreadline -o $@
+$(DEBUG): src/main.c src/debug.c $(CALCULATOR_SRC)
+	cc $(DEBUGFLAGS) -DDEBUG -DCMDLINE $^ -lreadline -o $@
 
 web: $(WEB)
 

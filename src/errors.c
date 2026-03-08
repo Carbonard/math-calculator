@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/calculator.h"
 
 static char error_str[SE_TOTAL][50] = {
 	[SE_CLOS_PAR] = "SE_CLOS_PAR",

@@ -1,4 +1,4 @@
-#include "calculator.h"
+#include "../includes/calculator.h"
 
 enum events
 {
