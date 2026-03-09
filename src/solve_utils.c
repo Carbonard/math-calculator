@@ -9,33 +9,51 @@ void	insert_operands(operand *op, int operation, operand *operands)
 	while (last->next)
 		last = last->next;
 	last->next = op->next;
+	if (op->next)
+		op->next->prev = last;
 	op->next = operands;
-	operands->operation = operation;
 	operands->prev = op;
+	operands->operation = operation;
 }
 
-void	expand_operand(operand **op)
-// Substitute op by operands. Assumes op->operand doesn't need to be liberated
+operand	*expand_operand(operand *op)
+// Substitute op by op->expr->operands
 {
-	operand *aux, *operands = (*op)->expr->operands;
+	operand *operands = op->expr->operands;
 
-	// insert_operands(*op, operands);
-	// aux = delete_operand(*op);
-	// if (aux)
-	// 	*op = aux;
-	// else
-	// 	*op = operands;
-	if ((*op)->prev)
-		(*op)->prev->next = operands;
-	aux = operands;
-	while (aux->next)
-		aux = aux->next;
-	aux->next = (*op)->next;
-	operands->operation = (*op)->operation;
-	operands->prev = (*op)->prev;
-	free((*op)->expr);
-	free(*op);
-	*op = operands;
+	insert_operands(op, op->operation, operands);
+	if (op->prev)
+	{
+		detach_operand(op);
+		free(op->expr);
+		free(op);
+		return (operands);
+	}
+	else
+	{
+		op->expr->operands = NULL;
+		shift_left(op);
+		return (op);
+	}
+}
+
+int pull_first_operand(num_expr *node)
+{
+	operand *aux = node->operands;
+	int		sign_changed = 0;
+
+	node->type = node->operands->expr->type;
+	node->subtype = node->operands->expr->subtype;
+	node->result = node->operands->expr->result;
+	if (node->operands->expr->sign)
+	{
+		node->sign = (node->operands->expr->sign != node->sign);
+		// sign_changed = 1;
+	}
+	node->operands = node->operands->expr->operands;
+	free(aux->expr);
+	free(aux);
+	return (sign_changed);
 }
 
 num_expr	*dup_expr(num_expr *original)
@@ -111,6 +129,17 @@ operand	*replace_operand(operand *copy, operand *original)
 	return (copy);
 }
 
+void	shift_left(operand *op)
+{
+	operand *original_next = op->next, *original_prev = op->prev;
+
+	replace_operand(op, op->next);
+	op->prev = original_prev;
+	if (op->next)
+		op->next->prev = op;
+	free(original_next);
+}
+
 void	detach_operand(operand *op)
 {
 	if (op->prev)
@@ -119,41 +148,54 @@ void	detach_operand(operand *op)
 		op->next->prev = op->prev;
 }
 
-int simplify_identity(operand *op)
+operand	*simplify_identity(num_expr *expr, operand *op)
 {
-	operand *aux;
+	operand *aux, *current_operand = op;
 
 	if (!op->prev)
 	{
-		if (expr_is_num(op->expr, 0) && op->next->operation == OP_SUM)
-		{
-			aux = op->next;
-			replace_operand(op, op->next);
-			op->prev = NULL;
-			detach_operand(aux);
-			free(aux);
-		}
+		if ((expr_is_num(op->expr, 0) && op->next->operation == OP_SUM)
+		|| (expr_is_num(op->expr, 1) && op->next->operation == OP_PROD))
+			shift_left(op);
 		else if (expr_is_num(op->expr, 0) && op->next->operation == OP_PROD)
 			delete_operand(op->next);
-		else
-				return (0);
+		else return (op);
 	}
 	else
 	{
-		if (expr_is_num(op->expr, 0) && op->operation == OP_SUM)
+		if ((expr_is_num(op->expr, 0) && op->operation == OP_SUM)
+		|| (expr_is_num(op->expr, 1) && op->operation == OP_PROD))
+		{
+			current_operand = op->next;
 			delete_operand(op);
+		}
 		else if (expr_is_num(op->expr, 0) && op->operation == OP_PROD)
 		{
+			current_operand = op->next;
 			aux = op->prev->prev;
 			replace_operand(op->prev, op);
 			op->prev->prev = aux;
 			detach_operand(op);
 			free(op);
 		}
-		else
-			return (0);
+		else return (op);
 	}
-	return (1);
+	print_num_expr(expr);
+	return (current_operand);
+}
+
+void	swap_operands(operand *op1, operand *op2)
+{
+	num_expr	*aux_expr;
+	int			aux_op;
+
+	aux_expr = op1->expr;
+	op1->expr = op2->expr;
+	op2->expr = aux_expr;
+	aux_op = op1->operation;
+	op1->operation = op2->operation;
+	if (aux_op)
+		op2->operation = aux_op;
 }
 
 operand	*delete_operand(operand *op)

@@ -43,7 +43,8 @@ char *manage_input(char *input)
 		#endif
 		if ((expr = generate_num_expr(tokens)) != NULL)
 			print_num_expr(expr);
-		printf("------------------------------------------\n");
+		// printf("------------------------------------------\n");
+		// printf("\\hline\n");
 		solve_by_steps(expr);
 		free_num_expr(expr);
 		free(tokens);

@@ -1,22 +1,18 @@
 #include "../includes/solve.h"
 
-static int pull_first_operand(num_expr *node)
+static operand	*solve_operand_didactic(num_expr *expr, operand *op)
 {
-	operand *aux = node->operands;
-	int		sign_changed = 0;
-
-	node->type = node->operands->expr->type;
-	node->subtype = node->operands->expr->subtype;
-	node->result = node->operands->expr->result;
-	if (node->operands->expr->sign)
-	{
-		node->sign = (node->operands->expr->sign != node->sign);
-		// sign_changed = 1;
-	}
-	node->operands = node->operands->expr->operands;
-	free(aux->expr);
-	free(aux);
-	return (sign_changed);
+	if (!op->prev && !op->next)
+		return (op);
+	// #ifdef DEBUG
+	// 	print_debug("Associative?\n");
+	// #endif
+	op = apply_associative(expr, op);
+	// #ifdef DEBUG
+	// 	print_debug("Identity?\n");
+	// #endif
+	op = simplify_identity(expr, op);
+	return (op);
 }
 
 static int bin_op_node_didactic(num_expr *expr, num_expr *node)
@@ -27,29 +23,30 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 		printind();
 		printf("Solving binary operation\n");
 	#endif
-	for (operand *op_1 = node->operands; op_1; op_1 = op_1->next)
+	operand *op1 = node->operands;
+	while (op1)
 	{
-		solve_node_didactic(expr, op_1->expr);
-		op_1 = apply_associative(expr, op_1);
-		for (operand* op_2 = op_1->next; op_2; op_2 = op_2->next)
+		solve_node_didactic(expr, op1->expr);
+		op1 = solve_operand_didactic(expr, op1);
+		operand* op2 = op1->next;
+		while (op2)
 		{
-			solve_node_didactic(expr, op_2->expr);
-			op_2 = apply_associative(expr, op_2);
-
-			if (apply_properties(expr, op_1, op_2))
+			solve_node_didactic(expr, op2->expr);
+			op2 = solve_operand_didactic(expr, op2);
+			if (apply_properties(expr, op1, op2))
 			{
 				print_num_expr(expr);
 				solve_node_didactic(expr, node);
 				return (0);
 			}
-			else if (op_1->expr->type == ALG_NUMBER && op_2->expr->type == ALG_NUMBER)
+			else if (op1->expr->type == ALG_NUMBER && op2->expr->type == ALG_NUMBER)
 			{
 				#ifdef DEBUG
-					print_operation(op_1, op_2);
+					print_operation(op1, op2);
 				#endif
-				if (operate_numbers(expr, op_1, op_2))
+				if (operate_numbers(expr, op1, op2))
 				{
-					op_2 = delete_operand(op_2);
+					op2 = delete_operand(op2);
 					print_num_expr(expr);
 					changed = 1;
 				}
@@ -62,7 +59,9 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 			else
 				print_debug("Not operated\n");
 			#endif
+			op2 = op2->next;
 		}
+		op1 = op1->next;
 	}
 	if (node->operands && !node->operands->next && node->type == ALG_BINARY_OP)
 	{
@@ -106,6 +105,7 @@ static void single_op_node_didactic(num_expr *expr, num_expr *node)
 					node->type = ALG_NUMBER;
 					print_num_expr(expr);
 				}
+				else node->result = 0;
 			}
 		}
 	}

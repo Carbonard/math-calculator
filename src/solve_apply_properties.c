@@ -76,6 +76,35 @@ static void	fraction_product(operand *op1, operand *op2)
 	}
 }
 
+static void	fraction_division(operand *op1, operand *op2)
+{
+	#ifdef DEBUG
+		printind();
+		printf("Applying division of fraction\n");
+	#endif
+	op2->prev->next = op2->next;
+	if (op2->next)
+		op2->next->prev = op2->prev;
+	if (op1->expr->subtype != OP_DIV)
+	{
+		operand_to_bin_op(op1, OP_PROD, op2->expr->operands->next);
+		operand_to_bin_op(op1, OP_DIV, op2->expr->operands);
+		free(op2->expr);
+		free(op2);
+	}
+	else if (op2->expr->subtype != OP_DIV)
+	{
+		operand_to_bin_op(op1->expr->operands->next, OP_PROD, op2);
+	}
+	else
+	{
+		operand_to_bin_op(op1->expr->operands, OP_PROD, op2->expr->operands->next);
+		operand_to_bin_op(op1->expr->operands->next, OP_PROD, op2->expr->operands);
+		free(op2->expr);
+		free(op2);
+	}
+}
+
 static void	fraction_sum(num_expr *expr, operand *op1, operand *op2)
 {
 	#ifdef DEBUG
@@ -128,8 +157,8 @@ int	apply_properties(num_expr *expr, operand *op1, operand *op2)
 		printf("Managing propieries\n");
 	#endif
 
-	if (simplify_identity(op1) || simplify_identity(op2))
-		return (1);
+	// if (simplify_identity(op1) || simplify_identity(op2))
+	// 	return (1);
 
 	// sqrt(a)*sqrt(b) = sqrt(a*b)
 	if (op2->operation == OP_PROD
@@ -142,6 +171,12 @@ int	apply_properties(num_expr *expr, operand *op1, operand *op2)
 		&& ((op1->expr->type == ALG_BINARY_OP && op1->expr->subtype == OP_DIV)
 		|| (op2->expr->type == ALG_BINARY_OP && op2->expr->subtype == OP_DIV)))
 		fraction_product(op1, op2);
+
+	// (a/b)/(c/d) = (ad)/(bc) // (a/b)/c = a/(bc) // a/(b/c) = (ac)/b
+	else if (op2->operation == OP_DIV
+		&& ((op1->expr->type == ALG_BINARY_OP && op1->expr->subtype == OP_DIV)
+		|| (op2->expr->type == ALG_BINARY_OP && op2->expr->subtype == OP_DIV)))
+		fraction_division(op1, op2);
 
 	// (a/b)+(c/d) // (a/b)+c
 	else if (op2->operation == OP_SUM
@@ -165,7 +200,7 @@ operand	*apply_associative(num_expr *expr, operand *op)
 			printind();
 			printf("Applying associative\n");
 		#endif
-		expand_operand(&op);
+		op = expand_operand(op);
 		print_num_expr(expr);
 	}
 	return (op);

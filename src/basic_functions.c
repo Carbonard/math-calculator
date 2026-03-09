@@ -27,7 +27,7 @@ integer	int_sqrt(integer n)
 
 	if (n < 0)
 		return (-1);
-	while (s < n)
+	while (s <= n)
 	{
 		if (s*s == n)
 			return (s);

@@ -68,7 +68,7 @@ static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 	while (tokens[i].type != ALG_END)
 	{
 		i = skip_parenthesis(tokens, i);
-		if (tokens[i].type == ALG_BINARY_OP && (tokens[i].sub_type == op1 ||  tokens[i].sub_type == op2))
+		if (tokens[i].type == ALG_BINARY_OP && (tokens[i].sub_type == op1 || tokens[i].sub_type == op2))
 		{
 			if (!expr)
 				expr = create_num_expr(ALG_BINARY_OP, op1);
@@ -84,6 +84,7 @@ static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 	}
 	if (expr)
 	{
+		expr->operands->operation = op1;
 		if (op == OP_DIV)
 			operand_to_bin_op(last_operand(expr), OP_DIV, create_operand_from_tokens(op, tokens, break_point, i));
 		else

@@ -37,25 +37,25 @@ static void	print_numexpr(num_expr *expr)
 			&& (expr->subtype != OP_DIV || !expr->operands->next))
 	{
 		if (expr->sign)
-			printf("(");
+			printf("\\left(");
 		if (expr->operands->expr->type == ALG_BINARY_OP)
 			if (parenthesis_needed(expr, expr->operands[0].expr))
-				printf("(");
+				printf("\\left(");
 		print_numexpr(expr->operands[0].expr);
 		if (expr->operands->expr->type == ALG_BINARY_OP)
 			if (parenthesis_needed(expr, expr->operands[0].expr))
-				printf(")");
+				printf("\\right)");
 		for (operand *op = expr->operands->next; op; op = op->next)
 		{
 			printf("%s",bin_operands[op->operation]);
 			if (parenthesis_needed(expr, op->expr))
-				printf("(");
+				printf("\\left(");
 			print_numexpr(op->expr);
 			if (parenthesis_needed(expr, op->expr))
-				printf(")");
+				printf("\\right)");
 		}
 		if (expr->sign)
-			printf(")");
+			printf("\\right)");
 	}
 	else if (expr->type == ALG_BINARY_OP && expr->subtype == OP_DIV)
 	{
