@@ -89,6 +89,10 @@ static num_expr	*split_num_expr_bin_op(alg_token_t *tokens, int op1, int op2)
 			operand_to_bin_op(last_operand(expr), OP_DIV, create_operand_from_tokens(op, tokens, break_point, i));
 		else
 			append_operand(expr, create_operand_from_tokens(op, tokens, break_point, i));
+		if (!expr->operands->next && op == OP_DIV)
+		{
+			pull_first_operand(expr);
+		}
 	}
 	return (expr);
 }

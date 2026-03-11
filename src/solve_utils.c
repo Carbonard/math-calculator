@@ -37,25 +37,6 @@ operand	*expand_operand(operand *op)
 	}
 }
 
-int pull_first_operand(num_expr *node)
-{
-	operand *aux = node->operands;
-	int		sign_changed = 0;
-
-	node->type = node->operands->expr->type;
-	node->subtype = node->operands->expr->subtype;
-	node->result = node->operands->expr->result;
-	if (node->operands->expr->sign)
-	{
-		node->sign = (node->operands->expr->sign != node->sign);
-		// sign_changed = 1;
-	}
-	node->operands = node->operands->expr->operands;
-	free(aux->expr);
-	free(aux);
-	return (sign_changed);
-}
-
 num_expr	*dup_expr(num_expr *original)
 {
 	num_expr *copy = malloc(sizeof(num_expr));
@@ -133,6 +114,12 @@ void	shift_left(operand *op)
 {
 	operand *original_next = op->next, *original_prev = op->prev;
 
+	if (!op->next)
+	{
+		op->expr = NULL;
+		op->operation = OP_ERR;
+		return;
+	}
 	replace_operand(op, op->next);
 	op->prev = original_prev;
 	if (op->next)
@@ -189,6 +176,13 @@ void	swap_operands(operand *op1, operand *op2)
 	num_expr	*aux_expr;
 	int			aux_op;
 
+	#ifdef DEBUG
+		print_debug("swapping operands:");
+		printind();
+		print_num_expr(op1->expr);
+		printind();
+		print_num_expr(op2->expr);
+	#endif
 	aux_expr = op1->expr;
 	op1->expr = op2->expr;
 	op2->expr = aux_expr;

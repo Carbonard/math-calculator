@@ -1,7 +1,9 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-// #define WEB
+// #ifndef DEBUG
+// #define DEBUG
+// #endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,15 +48,6 @@ enum e_alg_type
 	ALG_PARENTHESIS,// (, )
 	ALG_SINGLE_OP// sqrt, root, exp, abs, ln, log
 };
-
-// #ifdef DEBUG
-// char algtypes[10][30] = {
-// 	"ALG_NUMBER",
-// 	"ALG_BINARY_OP",
-// 	"ALG_PARENTHESIS",
-// 	"ALG_SINGLE_OP",
-// 	"ALG_END"};
-// #endif
 
 enum e_binary_operators
 {

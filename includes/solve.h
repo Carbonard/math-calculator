@@ -15,13 +15,13 @@ void	solve_node_didactic(num_expr *expr, num_expr *node);
 int	operate_numbers(num_expr *expr, operand *op1, operand *op2);
 
 //	Properties
-int		apply_properties(num_expr *expr, operand *op1, operand *op2);
+int		apply_properties_1(num_expr *expr, num_expr *node, operand *op1, operand *op2);
+int		apply_properties_2(num_expr *expr, num_expr *node, operand *op1, operand *op2);
 operand	*apply_associative(num_expr *expr, operand *op);
 
 //			Utils
 void		insert_operands(operand *op, int operation, operand *operands);
 operand		*expand_operand(operand *op);
-int			pull_first_operand(num_expr *node);
 num_expr	*dup_expr(num_expr *original);
 operand		*dup_operand(operand *original);
 int			expr_cmp(num_expr *expr1, num_expr *expr2);
@@ -30,6 +30,14 @@ operand		*replace_operand(operand *copy, operand *original);
 void		shift_left(operand *op);
 void		detach_operand(operand *op);
 operand		*simplify_identity(num_expr *expr, operand *op);
+void		swap_operands(operand *op1, operand *op2);
 operand		*delete_operand(operand *op);
+
+// Solve fractions
+void	simplify_frac(num_expr *expr, num_expr *frac);
+void	amplify_frac(num_expr *frac, operand *factor);
+int		fraction_product(num_expr *expr, operand *op1, operand *op2);
+int		fraction_division(num_expr *expr, operand *op1, operand *op2);
+int		fraction_sum(num_expr *expr, operand *op1, operand *op2);
 
 #endif

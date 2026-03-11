@@ -63,7 +63,7 @@ void	operand_to_bin_op(operand *left, int operation, operand *right)
 	// Create the binary operation structure
 	left->expr = create_num_expr(ALG_BINARY_OP, operation);
 	// Add left operand as first binary operand
-	left->expr->operands = create_operand(0, original_left);
+	left->expr->operands = create_operand(operation, original_left);
 	left->expr->operands->next = right;
 	// Extract right operand from its operands list
 	if (right->prev)
@@ -74,6 +74,28 @@ void	operand_to_bin_op(operand *left, int operation, operand *right)
 	right->next = NULL;
 	right->prev = left->expr->operands;
 	right->operation = operation;
+}
+
+int pull_first_operand(num_expr *node)
+{
+	operand *aux = node->operands;
+	int		sign_changed = 0;
+
+	#ifdef DEBUG
+		print_debug("Pulling first op\n");
+	#endif
+	node->type = node->operands->expr->type;
+	node->subtype = node->operands->expr->subtype;
+	node->result = node->operands->expr->result;
+	if (node->operands->expr->sign)
+	{
+		node->sign = (node->operands->expr->sign != node->sign);
+		// sign_changed = 1;
+	}
+	node->operands = node->operands->expr->operands;
+	free(aux->expr);
+	free(aux);
+	return (sign_changed);
 }
 
 operand	*last_operand(num_expr *expr)

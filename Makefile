@@ -6,7 +6,7 @@ DEBUGFLAGS = -g3 -fsanitize=address
 OTHER_SRC = basic_functions.c
 
 CALCULATOR_C = check_input manage_input\
-solve solve_apply_properties solve_operate_numbers solve_utils basic_functions\
+solve solve_apply_properties solve_operate_numbers solve_utils basic_functions solve_fractions\
 tree_generator print_expr tree_utils\
 errors json
 CALCULATOR_SRC = $(CALCULATOR_C:%=src/%.c)
@@ -26,4 +26,4 @@ web: $(WEB)
 
 $(WEB): $(CALCULATOR_WEB_SRC) docs/index.html
 # 	rm -f docs/calculator.js docs/calculator.wasm
-	emcc -DWEB $(CALCULATOR_WEB_SRC) -s EXPORTED_FUNCTIONS='["_manage_input", "_free"]' -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap']" -o docs/calculator.js
+	emcc -DWEB $(CALCULATOR_WEB_SRC) src/debug.c -s EXPORTED_FUNCTIONS='["_manage_input", "_free"]' -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap']" -o docs/calculator.js

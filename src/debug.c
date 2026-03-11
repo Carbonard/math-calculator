@@ -1,6 +1,24 @@
 #include "../includes/debug.h"
 #include "../includes/tree.h"
 
+char algtypes[10][30] = {
+	"ALG_END",
+	"ALG_SIGN",
+	"ALG_NUMBER",
+	"ALG_BINARY_OP",
+	"ALG_PARENTHESIS",
+	"ALG_SINGLE_OP"
+};
+
+char binop[10][30] = {
+	"OP_NONE",
+	"OP_SUM",
+	"OP_SUBS",
+	"OP_PROD",
+	"OP_DIV",
+	"OP_POW"
+};
+
 int	indent_spaces = 0;
 
 void printind()
