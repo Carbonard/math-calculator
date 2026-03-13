@@ -1,23 +1,23 @@
 #include "../includes/solve.h"
 
-static operand	*solve_operand_didactic(num_expr *expr, operand *op)
+static operand	*solve_operand(solving_data *data, operand *op)
 {
 	if (!op->prev && !op->next)
 		return (op);
 	// #ifdef DEBUG
 	// 	print_debug("Associative?\n");
 	// #endif
-	op = apply_associative(expr, op);
+	op = apply_associative(data, op);
 	// #ifdef DEBUG
 	// 	print_debug("Identity?\n");
 	// #endif
-	op = simplify_identity(expr, op);
+	op = simplify_identity(data, op);
 	return (op);
 }
 
-static int bin_op_node_didactic(num_expr *expr, num_expr *node)
+static int bin_op_node(solving_data *data, num_expr *node)
 {
-	int		changed = 0;
+	int			changed = 0;
 
 	#ifdef DEBUG
 		printind();
@@ -26,34 +26,26 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 	operand *op1 = node->operands;
 	while (op1)
 	{
-		if (op1->next && apply_properties_1(expr, node, op1, op1->next))
+		if (op1->next && apply_properties_1(data, node, op1, op1->next))
 			return (0);
-		solve_node_didactic(expr, op1->expr);
-		op1 = solve_operand_didactic(expr, op1);
+		solve_node(data, op1->expr);
+		op1 = solve_operand(data, op1);
 		operand* op2 = op1->next;
 		while (op2)
 		{
-			if (apply_properties_1(expr, node, op1, op2))
+			if (apply_properties_1(data, node, op1, op2))
 				return (0);
-			solve_node_didactic(expr, op2->expr);
-			op2 = solve_operand_didactic(expr, op2);
-			if (apply_properties_2(expr, node, op1, op2))
+			solve_node(data, op2->expr);
+			op2 = solve_operand(data, op2);
+			if (apply_properties_2(data, node, op1, op2))
 				return (0);
 			else if (op1->expr->type == ALG_NUMBER && op2->expr->type == ALG_NUMBER)
 			{
 				#ifdef DEBUG
 					print_operation(op1, op2);
 				#endif
-				if (operate_numbers(expr, op1, op2))
-				{
-					op2 = delete_operand(op2);
-					print_num_expr(expr);
-					changed = 1;
-				}
-				#ifdef DEBUG
-				else
-					print_debug("Not operated\n");
-				#endif
+				if (operate_numbers(data, node, op1, op2))
+					return (0);
 			}
 			#ifdef DEBUG
 			else
@@ -69,7 +61,7 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 			print_debug("Simplifying branch\n");
 		#endif
 		if (pull_first_operand(node))
-			print_num_expr(expr);
+			record_step(data, STEP_SIGN);
 		#ifdef DEBUG
 			printind();
 			printf("Now the type is %s and the subtyoe %s\n", algtypes[node->type], binop[node->subtype]);
@@ -83,7 +75,7 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 		#endif
 		node->operands->expr->sign = 0;
 		node->sign = !node->sign;
-		print_num_expr(expr);
+		record_step(data, STEP_SIGN);
 	}
 	else if ((node->subtype == OP_DIV)
 			&& node->operands && node->sign)
@@ -93,21 +85,21 @@ static int bin_op_node_didactic(num_expr *expr, num_expr *node)
 		#endif
 		node->sign = 0;
 		node->operands->expr->sign = !node->sign;
-		print_num_expr(expr);
+		record_step(data, STEP_SIGN);
 	}
 	return (changed);
 }
 
-static void single_op_node_didactic(num_expr *expr, num_expr *node)
+static void single_op_node(solving_data *data, num_expr *node)
 {
-	solve_node_didactic(expr, node->operands->expr);
+	solve_node(data, node->operands->expr);
 	if (node->operands->expr->type == ALG_NUMBER)
 	{
 		if (node->operands->operation == OP_ABS)
 		{
 			node->type = ALG_NUMBER;
 			node->result = node->operands->expr->result;
-			print_num_expr(expr);
+			record_step(data, STEP_ABS);
 		}
 		else if (node->operands->operation == OP_SQRT)
 		{
@@ -117,7 +109,7 @@ static void single_op_node_didactic(num_expr *expr, num_expr *node)
 				if (node->result >= 0)
 				{
 					node->type = ALG_NUMBER;
-					print_num_expr(expr);
+					record_step(data, STEP_SQRT);
 				}
 				else node->result = 0;
 			}
@@ -125,9 +117,10 @@ static void single_op_node_didactic(num_expr *expr, num_expr *node)
 	}
 }
 
-void rearrange_operands(num_expr *expr, num_expr *node)
+void rearrange_operands(solving_data *data, num_expr *node)
 {
 	operand *op = node->operands;
+	data->record = 0;
 
 	#ifdef DEBUG
 		print_debug("sorting operands\n");
@@ -139,15 +132,17 @@ void rearrange_operands(num_expr *expr, num_expr *node)
 		if (expr_cmp(op->expr, op->next->expr) > 0)
 		{
 			swap_operands(op, op->next);
-			print_num_expr(expr);
+			data->record = 1;
 			op = node->operands;
 		}
 		else
 			op = op->next;
 	}
+	if (data->record)
+		record_step(data, STEP_SORT_OP);
 }
 
-void solve_node_didactic(num_expr *expr, num_expr *node)
+void solve_node(solving_data *data, num_expr *node)
 {
 	if (node->type == ALG_NUMBER)
 		return;
@@ -156,20 +151,31 @@ void solve_node_didactic(num_expr *expr, num_expr *node)
 		print_debug("Solving ");
 		print_num_expr(node);
 	#endif
-	while (node->type == ALG_BINARY_OP && bin_op_node_didactic(expr, node))
-		(void)expr;
+	while (node->type == ALG_BINARY_OP && bin_op_node(data, node))
+		(void)data;
 	if (node->type == ALG_SINGLE_OP)
-		single_op_node_didactic(expr, node);
-	rearrange_operands(expr, node);
-	simplify_frac(expr, node);
+		single_op_node(data, node);
+	rearrange_operands(data, node);
+	simplify_frac(data, node);
 	#ifdef DEBUG
 		print_debug("Solved: ");
-		print_num_expr(expr);
+		print_num_expr(data->full_expr);
 		indent_spaces--;
 	#endif
 }
 
-void	solve_by_steps(num_expr *expr)
+step	*solve_by_steps(num_expr *expr)
 {
-	solve_node_didactic(expr, expr);
+	step_list		steps;
+	solving_data	data;
+
+	steps.capacity = 1;
+	steps.length = 0;
+	steps.array = malloc(sizeof(step));
+	data.full_expr = expr;
+	data.steps = &steps;
+	record_step(&data, STEP_INITIAL);
+	solve_node(&data, expr);
+	record_step(&data, -1);
+	return (steps.array);
 }

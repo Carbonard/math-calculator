@@ -125,10 +125,10 @@ int sing_op_length[] = {
 
 static void add_token(alg_token_array_t *tokens, int type, int sub_type, int num)
 {
-	if (tokens->length >= tokens->size)
+	if (tokens->length >= tokens->capacity)
 	{
-		tokens->array = realloc(tokens->array, tokens->size * 2 * sizeof(alg_token_t));
-		tokens->size *= 2;
+		tokens->array = realloc(tokens->array, tokens->capacity * 2 * sizeof(alg_token_t));
+		tokens->capacity *= 2;
 	}
 	#ifdef DEBUG
 		printf("Add token %d, %d, %d in %d\n", type, sub_type, num, tokens->length);
@@ -167,7 +167,7 @@ alg_token_t	*check_syntax(char *input, json_obj **json)
 	alg_token_array_t	tokens;
 
 	tokens.array = malloc(1 * sizeof(alg_token_t));
-	tokens.size = 1;
+	tokens.capacity = 1;
 	tokens.length = 0;
 	while (input[i] && state != S_ERROR)
 	{

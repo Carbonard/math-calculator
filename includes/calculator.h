@@ -31,14 +31,6 @@ enum syntax_status
 	SE_TOTAL
 };
 
-// typedef struct s_bin_operation
-// {
-// 	struct s_bin_operation	*left;
-// 	struct s_bin_operation	*right;
-// 	char					op;
-// 	rational				result;
-// }	t_bin_operation;
-
 enum e_alg_type
 {
 	ALG_END,
@@ -64,9 +56,9 @@ enum e_single_operators
 	OP_SNONE,
 	OP_SQRT,
 	OP_ROOT,
+	OP_EXP,
 	OP_LN,
 	OP_LOG,
-	OP_EXP,
 	OP_ABS,
 	OP_ERR
 };
@@ -90,7 +82,7 @@ typedef struct alg_token_s
 typedef struct alg_token_array_s
 {
 	alg_token_t	*array;
-	int			size;
+	int			capacity;
 	int			length;
 }	alg_token_array_t;
 
@@ -138,13 +130,10 @@ struct s_operand
 // Input
 alg_token_t	*check_syntax(char *input, json_obj **json);
 char		*manage_input(char *input);
-// Input errors
+
 void		 print_syntax_error(char *input, int error, int index);
 json_obj	 *json_syntax_error(int error, char *input, int index);
 void		 print_tokens(alg_token_t *tokens);
 num_expr	*generate_num_expr(alg_token_t *tokens);
-void		solve_by_steps(num_expr *expr);
-// Utils
-void		remove_spaces(char *str);
 
 #endif

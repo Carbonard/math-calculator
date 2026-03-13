@@ -135,26 +135,42 @@ void	detach_operand(operand *op)
 		op->next->prev = op->prev;
 }
 
-operand	*simplify_identity(num_expr *expr, operand *op)
+operand	*simplify_identity(solving_data *data, operand *op)
 {
 	operand *aux, *current_operand = op;
 
 	if (!op->prev)
 	{
-		if ((expr_is_num(op->expr, 0) && op->next->operation == OP_SUM)
-		|| (expr_is_num(op->expr, 1) && op->next->operation == OP_PROD))
+		if (expr_is_num(op->expr, 0) && op->next->operation == OP_SUM)
+		{
 			shift_left(op);
+			record_step(data, STEP_SUM_ZERO);
+		}
+		if (expr_is_num(op->expr, 1) && op->next->operation == OP_PROD)
+		{
+			shift_left(op);
+			record_step(data, STEP_MULT_ONE);
+		}
 		else if (expr_is_num(op->expr, 0) && op->next->operation == OP_PROD)
+		{
 			delete_operand(op->next);
+			record_step(data, STEP_MULT_ZERO);
+		}
 		else return (op);
 	}
 	else
 	{
-		if ((expr_is_num(op->expr, 0) && op->operation == OP_SUM)
-		|| (expr_is_num(op->expr, 1) && op->operation == OP_PROD))
+		if (expr_is_num(op->expr, 0) && op->operation == OP_SUM)
 		{
 			current_operand = op->next;
 			delete_operand(op);
+			record_step(data, STEP_SUM_ZERO);
+		}
+		if (expr_is_num(op->expr, 1) && op->operation == OP_PROD)
+		{
+			current_operand = op->next;
+			delete_operand(op);
+			record_step(data, STEP_MULT_ONE);
 		}
 		else if (expr_is_num(op->expr, 0) && op->operation == OP_PROD)
 		{
@@ -164,10 +180,10 @@ operand	*simplify_identity(num_expr *expr, operand *op)
 			op->prev->prev = aux;
 			detach_operand(op);
 			free(op);
+			record_step(data, STEP_MULT_ZERO);
 		}
 		else return (op);
 	}
-	print_num_expr(expr);
 	return (current_operand);
 }
 

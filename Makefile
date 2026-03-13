@@ -8,6 +8,7 @@ OTHER_SRC = basic_functions.c
 CALCULATOR_C = check_input manage_input\
 solve solve_apply_properties solve_operate_numbers solve_utils basic_functions solve_fractions\
 tree_generator print_expr tree_utils\
+record_steps prints\
 errors json
 CALCULATOR_SRC = $(CALCULATOR_C:%=src/%.c)
 CALCULATOR_WEB_SRC = $(CALCULATOR_SRC)

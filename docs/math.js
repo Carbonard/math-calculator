@@ -50,6 +50,10 @@ document.getElementById("langSelect").addEventListener
 	(e) => {loadLanguage(e.target.value);}
 	);
 
+
+
+
+
 // C API
 
 const errMessages =
@@ -69,6 +73,7 @@ var Module =
 {
 	print(text)
 	{
+		return;
 		// document.getElementById("output").textContent += text + "\n";
 		const mathSpan = document.createElement("span");
 		katex.render(text, mathSpan, {
@@ -76,9 +81,38 @@ var Module =
 			displayMode: true
 		});
 		document.getElementById("output").appendChild(mathSpan);
-	},
-	printErr(errOutput)
-	{
+	}
+};
+
+function display_step(step)
+{
+	const output = document.getElementById("output");
+
+	const stepBlock = document.createElement("div");
+	stepBlock.classList.add("step");
+	stepBlock.classList.add("stepBlock");
+
+	const stepInfo = document.createElement("div");
+	stepInfo.classList.add("stepInfo");
+	console.log(step.code);
+	stepInfo.dataset.i18n = "steps."+step.code;
+	loadLanguage(currentLang);
+	stepInfo.textContent = step.code; 
+
+	const math = document.createElement("div");
+	math.classList.add("latex");
+	katex.render(step.latex, math, {
+		throwOnError: false,
+		displayMode: true
+	});
+	
+	stepBlock.appendChild(stepInfo);
+	stepBlock.appendChild(math);
+	output.append(stepBlock);	
+}
+
+function printErr(errOutput)
+{
 	try
 	{
 		let errData = JSON.parse(errOutput);
@@ -97,24 +131,30 @@ var Module =
 	{
 		console.error("Invalid JSON:", errOutput);
 		return;
-	}	
 	}
-};
+}
 
 function solve()
 {
 	document.getElementById("output").innerHTML = "";
 	document.getElementById("errorType").innerHTML = "";
 	document.getElementById("errorDetails").innerHTML = "";
-	var expr = document.getElementById("expr").value;
+
+	let expr = document.getElementById("expr").value;
 	let ptr = Module.ccall('manage_input', "number", ['string'], [expr]);
-	console.log(ptr);
 	let aux = UTF8ToString(ptr);
 	Module._free(ptr);
-	json = JSON.parse(aux);
-	if (json.status === "syntax_error")
-		Module.printErr(aux);
 
+	json = JSON.parse(aux);
+
+	if (json.status === "syntax_error")
+	{
+		printErr(aux);
+	}
+	else if (json.status === "ok")
+	{
+		json.steps.forEach(display_step);
+	}
 }
 
 document.getElementById("inputForm").addEventListener("submit", function(event)

@@ -20,12 +20,25 @@ void print_tokens(alg_token_t *tokens)
 	fprintf(stderr, "\n\e[0m\n");
 }
 
+void free_steps(step *steps)
+{
+	step *i_step = steps;
+
+	while (i_step->step_code >= 0)
+	{
+		free(i_step->latex);
+		i_step++;
+	}
+	free(steps);
+}
+
 char *manage_input(char *input)
 {
 	alg_token_t		*tokens;
 	num_expr		*expr;
 	json_obj		*json;
-	char			json_str[1000];
+	char			*json_str = NULL;
+	step			*steps = NULL;
 
 	if (!input || !input[0])
 		return (NULL);
@@ -41,21 +54,26 @@ char *manage_input(char *input)
 		#ifdef DEBUG
 			print_tokens(tokens);
 		#endif
-		if ((expr = generate_num_expr(tokens)) != NULL)
+		expr = generate_num_expr(tokens);
+		if (expr)
+		{
 			print_num_expr(expr);
-		// printf("------------------------------------------\n");
-		// printf("\\hline\n");
-		solve_by_steps(expr);
-		free_num_expr(expr);
-		free(tokens);
-		// free_num_expr(expr);
+			steps = solve_by_steps(expr);
+			delete_json(json);
+			// free(json);
+			json = steps_json(steps);
+			free(steps); // no libera todo porque lo usa json
+			free_num_expr(expr);
+			free(tokens);
+		}
 	}
-	sprint_json(json, json_str);
+	json_str = json_to_str(json);
 	delete_json(json);
 	#ifdef DEBUG
 		fprintf(stderr, "\njson:\n%s\n\n", json_str);
 	#else
 		(void)tokens;
 	#endif
-	return (strdup(json_str));
+	// printf(json_str);
+	return (json_str);
 }

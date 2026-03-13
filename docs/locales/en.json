@@ -30,6 +30,33 @@
 	}
 },
 
+"steps": {
+	"STEP_INITIAL": "Initial Input",
+	"STEP_SIGN": "Change signs",
+	"STEP_ASSOCIATIVE": "Associative property",
+	"STEP_SIMPLIFY_FRAC": "Simplify fraction",
+	"STEP_MULT_FRAC_NOFRAC": "Multiply fraction with no fraction",
+	"STEP_MULT_FRACS": "Multiply fractions",
+	"STEP_SUBS_TO_SUM": "Transform subtraction of negative to sum of positive",
+	"STEP_ABS": "Calculate the absolute value",
+	"STEP_SQRT": "Calculate the square root",
+	"STEP_SORT_OP": "Rearrange operands",
+	"STEP_AMPLIFY_FRAC": "Amplify fraction",
+	"STEP_AMPLIFY_FRACS": "Amplify fractions",
+	"STEP_SUM_FRACS": "Sum fractions",
+	"STEP_DIV_FRACS": "Divide fractios",
+	"STEP_DIV_FRAC_BY_NUM": "Divide fraction by non-fraction",
+	"STEP_DIV_NUM_BY_FRAC": "Divide non-fractin by fraction",
+	"STEP_SUM_ZERO": "Sum 0 is like do nothing",
+	"STEP_MULT_ONE": "Multiply by 1 is like do nothing",
+	"STEP_MULT_ZERO": "Multiply by 0 kills anything",
+	"STEP_MULT_SQRT": "The product of square roots is the square root of the product",
+	"STEP_SUM_NUMS": "Sum numbers",
+	"STEP_SUBS_NUMS": "substract numbers",
+	"STEP_MULT_NUMS": "Multiply numbers",
+	"STEP_DIV_NUMS": "Divide numbers"
+},
+
 "messages": {
 	"result": "Result",
 	"steps": "Steps"

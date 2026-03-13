@@ -1,8 +1,10 @@
-body{
-	font-size: 24px;
+body
+{
+	font-size: 21px;
 }
 
-input{
+input
+{
 	size: 2em;
 }
 
@@ -15,18 +17,63 @@ input{
 	display: inline-block; 
 	text-align: left;
 } */
-.error {
+.error
+{
 	color: red;
 	display: block;   /* bloque completo */
 	text-align: left; /* texto dentro alineado a la izquierda */
 	margin: 0 auto;   /* centra el bloque horizontalmente */
 	padding: 0.5em;
 }
-.centered{
-	text-align:center
+.centered
+{
+	text-align: center
 }
 
-.errorContainer{
-	display:flex;
+.errorContainer
+{
+	display: flex;
 	flex-direction: column;
+}
+
+#output
+{
+	display: flex;
+	flex-direction: column;
+	margin: 20pt;
+}
+
+.stepBlock
+{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 0pt;
+	margin: 7pt;
+}
+
+.stepInfo
+{
+	margin: 0pt;
+	padding: 0pt;
+	margin: -5pt;
+}
+
+.latex
+{
+	margin: 0pt;
+	padding: 0pt;
+	margin: -5pt;
+}
+
+.debug * {
+  outline: 1px dashed rgba(255,0,0,0.8);
+}
+
+.debug * * {
+  outline: 1px dashed rgba(0,255,0,0.8);
+}
+
+.debug * * * {
+  outline: 1px dashed rgba(0,0,255,0.8);
 }

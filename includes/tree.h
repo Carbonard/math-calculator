@@ -15,6 +15,7 @@ void		free_num_expr(num_expr *expr);
 void		free_operand(operand *op);
 
 //			Print tree
-void		print_num_expr(num_expr *expr);
+char	*num_expr_to_str(const num_expr* expr);
+void	print_num_expr(const num_expr *expr);
 
 #endif
